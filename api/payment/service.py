@@ -1,4 +1,4 @@
-from models import customers_models,order_models,bills_models,foodItems_models,orderdetails_models,\
+from models import customers_models,order_models,bills_models,foodItems_models,foodorder_models,\
     payment_models
 from configurations import config
 from fastapi import HTTPException,Response
@@ -25,3 +25,33 @@ def get_paytment_of_order(session):
         )
 
     return payment
+
+def totalPayment(orderid,session):
+
+    # get the users data with the given id
+    orderpayment =\
+        session.query(foodorder_models.FoodOrder,foodItems_models.FoodItems).\
+            join(foodItems_models.FoodItems,foodorder_models.FoodOrder.foodItemId==foodItems_models.FoodItems.foodItemId).\
+            filter(foodorder_models.FoodOrder.orderId==orderid).\
+            with_entities(foodorder_models.FoodOrder.orderId,foodorder_models.FoodOrder.foodItemId,foodorder_models.FoodOrder.quantity
+            ,foodItems_models.FoodItems.price,foodItems_models.FoodItems.name).all()
+    output=[]
+    output1 = []
+    for payment in orderpayment:
+        total = payment.quantity*payment.price
+        
+        output.append(
+            total)
+        output1.append({
+            "orderId":payment.orderId,
+            "foodItemId":payment.foodItemId,
+            "foodname":payment.name,
+            "quantity":payment.quantity,
+            "price":payment.price,
+            "total-price":total
+            
+        })
+    
+    s=sum(output)
+    result = {"order":output1,"total amount":s}  
+    return result

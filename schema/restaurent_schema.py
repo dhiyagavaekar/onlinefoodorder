@@ -1,0 +1,18 @@
+from pydantic import BaseModel,validator,ValidationError
+from datetime import datetime
+from typing import Optional
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    address: str
+    city: str
+    state: str
+    mobile_no: str
+    created_at:datetime
+    updated_at:datetime

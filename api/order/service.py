@@ -9,7 +9,7 @@ settings=config.Settings()
 
 def read_orders(session):
 
-    # get the users data with the given id
+    # get all orders details
     order =\
         session.query(
             order_models.Order1
@@ -23,7 +23,8 @@ def read_orders(session):
 
     return order
 
-def read_orderbyid(orderid,session):#1,2
+# restaurent will get order details by orderid
+def read_OrderbyId(orderid,session):#1,2
     order =\
         session.query(order_models.Order1,foodorder_models.FoodOrder,foodItems_models.FoodItems)\
         .join(foodorder_models.FoodOrder,order_models.Order1.orderId==foodorder_models.FoodOrder.orderId)\

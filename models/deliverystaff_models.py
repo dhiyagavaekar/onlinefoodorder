@@ -7,6 +7,8 @@ class Deliverystaff(db_config.BASE):
     deliverystaffId = Column(Integer,autoincrement=True,primary_key=True)
     firstname = Column(String,default = None)
     lastname= Column(String,default = None)
+    email= Column(String,unique=True,default = None)
+    password = Column(String,default = None)
     mobile_no= Column(String,default = None)
     created_at=Column(DateTime, default=None)
     updated_at=Column(DateTime, default=None)

@@ -1,17 +1,21 @@
-from models import customers_models,order_models,bills_models,foodItems_models,orderdetails_models,\
-    restaurent_models
-from configurations import config
-from fastapi import HTTPException,Response
-from common import helper as common_helper
 from . import helper as customer_helper
+from models import customers_models,order_models,bills_models,foodItems_models,orderdetails_models,\
+    restaurent_models,foodorder_models,delivery_models,deliverystaff_models
+from configurations import config
+from fastapi import FastAPI, Depends, HTTPException,APIRouter
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from typing import Optional
 
 settings=config.Settings()
 
 
 
-def getallrestaurents(session):
+def getAllRestaurents(session):
 
-    # get the users data with the given id
+    # get all restaurent data
     restaurent =\
         session.query(
             restaurent_models.Restaurent
@@ -25,7 +29,8 @@ def getallrestaurents(session):
 
     return restaurent
 
-def addfooditem(id,addfood,session):  
+# Restaurent can addfooditems
+def addFoodItem(id,addfood,session):  
     restaurent = session.query(foodItems_models.FoodItems).filter(
        foodItems_models.FoodItems.restaurentId==id
         ).first() 
@@ -57,8 +62,9 @@ def addfooditem(id,addfood,session):
         #   "created_at": "2023-04-21T11:46:08",
         #   "updated_at": "2023-04-21T11:46:08"
         # }
-        
-def fooditemupdate(fooditemid: int,restaurentid:int, fooditemupdate, session):
+
+# restaurent can update their food items        
+def foodItemUpdate(fooditemid: int,restaurentid:int, fooditemupdate, session):
     fooditemupdate_json_data = dict(fooditemupdate)
 
     
@@ -92,7 +98,8 @@ def fooditemupdate(fooditemid: int,restaurentid:int, fooditemupdate, session):
         #   "updated_at": "2023-04-21T11:57:16"
         # }
 
-def delete_fooditem(restaurentid, fooditemid,session):
+#restaurent can delete food items
+def delete_foodItem(restaurentid, fooditemid,session):
     restaurent = session.query(foodItems_models.FoodItems).filter(
        foodItems_models.FoodItems.restaurentId==restaurentid
         ).all()
@@ -105,3 +112,76 @@ def delete_fooditem(restaurentid, fooditemid,session):
         session.commit()
         
         return f"fooditem deleted"
+    
+SECRET_KEY = "some-secret-key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+
+# # @login_routes1.post("/signup1", response_model=userlogin1_schema.Token)
+def signup(user, db):
+    db_user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    hashed_password = pwd_context.hash(user.password)
+    db_user = restaurent_models.Restaurent(email=user.email, password=hashed_password,name=user.name,\
+        address=user.address,city=user.city,state=user.state,mobile_no=user.mobile_no,created_at=user.created_at,updated_at=user.updated_at)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    access_token = create_access_token(data={"sub": db_user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# # @login_routes1.post("/login1", response_model=userlogin1_schema.Token)
+def login(form_data, db):
+    user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == form_data.username).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    if not pwd_context.verify(form_data.password, user.password):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    data = {
+        "sub": user.email,
+        "restaurentId": user.restaurentId,
+        "name": user.name,
+        "email":user.email
+        
+    }
+    access_token = create_access_token(data=data)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+def create_token(form_data, db):
+    # user = authenticate_user(db, form_data.username, form_data.password)
+    user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == form_data.username).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_data = {
+        
+        "restaurentId": user.restaurentId,
+        "name": user.name,
+        "email": user.email,
+        "mobile_no.":user.mobile_no
+        
+    }
+    access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+    return {"CustomerData":access_token_data,"access_token": access_token}

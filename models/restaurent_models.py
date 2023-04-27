@@ -6,6 +6,8 @@ class Restaurent(db_config.BASE):
     __tablename__ = 'restaurent'
     restaurentId = Column(Integer,autoincrement=True,primary_key=True)
     name = Column(String,default = None)
+    email= Column(String,unique=True,default = None)
+    password = Column(String,default = None)
     address = Column(String,default = None)
     city= Column(String,default = None)
     state= Column(String,default = None)

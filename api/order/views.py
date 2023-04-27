@@ -17,5 +17,5 @@ def Read_orders(Session = Depends(common_helper.get_session)):
     "/read_orderbyid", tags=['orders']
 )
 def Read_orderbyid(orderid:int,Session = Depends(common_helper.get_session)):
-    return order_service.read_orderbyid(orderid,Session)
+    return order_service.read_OrderbyId(orderid,Session)
 
