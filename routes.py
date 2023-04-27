@@ -1,5 +1,6 @@
 
 from api.customers import views as customers_views
+from api.customers import service as customers_service
 # from api.login import service as login_service
 from api.restaurent import views as restaurent_views
 from api.order import views as order_views
@@ -16,6 +17,7 @@ routes_path = [
     payment_views.payment_routes,
     # login_service.login_routes,
     login_service.login_routes1,
+    customers_service.customers_routes1
     
     
     

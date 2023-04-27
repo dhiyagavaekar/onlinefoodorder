@@ -9,6 +9,13 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
+from fastapi import Depends, APIRouter, status
+from common import helper as common_helper
+from typing import Annotated
+
+
+customers_routes1 = APIRouter()
+
 
 settings=config.Settings()
 
@@ -129,6 +136,19 @@ def deleteOrder(id, session):
         
         return True
     
+# @app.put("/items/{item_id}")
+def softdelete_order(id, session):
+    order=session.query(order_models.Order1).filter(
+        order_models.Order1.orderId==id
+        ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Item not found")
+    order.deleted = True
+    session.commit()
+    return {"message": "Item soft-deleted"}
+
+
+
 SECRET_KEY = "some-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -218,18 +238,54 @@ def create_token(form_data, db):
     access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
     return {"CustomerData":access_token_data,"access_token": access_token}
 
-# def get_current_user(token: str = Depends(oauth2_scheme)):
+def verify_token(token):
+    try:
+        payload = jwt.decode(token, key=SECRET_KEY)
+        print("1----------")
+        return payload
+    except:
+        print("2----------")
+        raise Exception("Wrong token")
+
+def check_active(token: str = Depends(oauth2_scheme)):
+    print("abc")
+    payload = verify_token(token)
+    active = payload.get("customerId")
+    print("3----------")
+    if not active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Please activate your Account first",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    else:
+        return payload
+
+
+# def decode_token(token: Annotated[str, Depends(oauth2_scheme)]):
 #     try:
 #         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         email: str = payload.get("sub")
-#         customerId:str=payload.get("customerId")
-#         firstname: str = payload.get("firstname")
-#         if id is None or firstname is None or email is None:
-#             raise HTTPException(status_code=401, detail="Invalid token")
-#         token_data= {"email": email, "customerId":customerId,"firstname": firstname}
-#         return token_data
+#         print(token)
+#         print(payload)
+#         return payload
 #     except JWTError:
 #         raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+
+def CustomersbyId(token, session):
+    try:
+        payload = check_active(token)
+        print(payload)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    customerId = payload.get("customerId")
+    customers =\
+        session.query(
+            customers_models.Customers
+        ).filter(customers_models.Customers.customerId==customerId).all()
+    
+    return customers
 
 
 

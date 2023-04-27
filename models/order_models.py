@@ -12,3 +12,5 @@ class Order1(db_config.BASE):
     instructions= Column(String,default = None)
     created_at=Column(DateTime, default=None)
     updated_at=Column(DateTime, default=None)
+    
+    # deleted = Column(Boolean, default=False)
