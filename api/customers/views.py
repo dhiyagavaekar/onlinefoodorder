@@ -8,29 +8,23 @@ from api.login import jwt_bearer
 from . import service as customers_service
 from schema import order_schema,customers_schema
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from api.registration_login import service as reg_service
+from jose import jwt, JWTError
+
 
 customers_routes = APIRouter()
 # ,  dependencies=[Depends(jwt_bearer.JWTBearer())]
 
-@customers_routes.post("/customer-Signup", response_model=customers_schema.Token,tags=["login-customers"])
-def Signup(user: customers_schema.UserCreate, db: Session = Depends(common_helper.get_session)):
-    return customers_service.signup(user,db)
 
-@customers_routes.post("/customer-Login", response_model=customers_schema.Token,tags=["login-customers"])
-def Login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
-    return customers_service.login(form_data,db)
+@customers_routes.get("/customersbyid",tags=["customers"])
+def CustomersbyId(db: Session = Depends(common_helper.get_session), token: str = Depends(reg_service.oauth2_scheme) ):
+    middleware_username=reg_service.jwt_token_middleware(token)
 
-@customers_routes.post("/getcustomer-with-token", tags=["login-customers"])
-def Create_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
-    return customers_service.create_token(form_data,db)
+    return customers_service.get_customer_details(middleware_username,db)
 
-@customers_routes.get("/customersbyid",tags=["login-customers"])
-def CustomersbyId(token: str, db: Session = Depends(common_helper.get_session)):
-    return customers_service.CustomersbyId(token,db)
-
-
+# dependencies=[Depends(customers_service.check_active)]
 @customers_routes.get(
-    "/Allcustomers",  dependencies=[Depends(customers_service.check_active)],  tags=['customers']
+    "/Allcustomers",  tags=['customers']
 )
 def customers_read(Session = Depends(common_helper.get_session)):
     return customers_service.read_customers(Session)

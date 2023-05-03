@@ -8,6 +8,8 @@ from typing import Dict
 import jwt
 from decouple import config
 from datetime import datetime,timedelta
+from . import service 
+from fastapi import Depends
 
 
 JWT_SECRET = config("secret")
@@ -36,3 +38,4 @@ def decodeJWT(token: str) -> dict:
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except:
         return {}
+    

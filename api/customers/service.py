@@ -1,4 +1,4 @@
-from models import customers_models,order_models,foodItems_models,orderdetails_models
+from models import customers_models,order_models,foodItems_models,orderdetails_models,restaurent_models,deliverystaff_models
 from configurations import config
 from fastapi import HTTPException,Response
 from . import helper as customer_helper
@@ -12,10 +12,7 @@ from typing import Optional
 from fastapi import Depends, APIRouter, status
 from common import helper as common_helper
 from typing import Annotated
-
-
-customers_routes1 = APIRouter()
-
+from api.registration_login import service as reg_service
 
 settings=config.Settings()
 
@@ -148,140 +145,14 @@ def softdelete_order(id, session):
     return {"message": "Item soft-deleted"}
 
 
-
-SECRET_KEY = "some-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-def authenticate_user(db: Session, email: str, password: str):
-    user = db.query(customers_models.Customers).filter(customers_models.Customers.email == email).all()
-    if not user:
-        return None
-    if not verify_password(password, user.password):
-        return None
-    return user
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-
-# @login_routes1.post("/signup1", response_model=userlogin1_schema.Token)
-def signup(user, db):
-    db_user = db.query(customers_models.Customers).filter(customers_models.Customers.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    hashed_password = pwd_context.hash(user.password)
-    db_user = customers_models.Customers(email=user.email, password=hashed_password,firstname=user.firstname,\
-        lastname=user.lastname,address=user.address,city=user.city,state=user.state,mobile_no=user.mobile_no,created_at=user.created_at,updated_at=user.updated_at)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    access_token = create_access_token(data={"sub": db_user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-# @login_routes1.post("/login1", response_model=userlogin1_schema.Token)
-def login(form_data, db):
-    user = db.query(customers_models.Customers).filter(customers_models.Customers.email == form_data.username).first()
-    print
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-    if not pwd_context.verify(form_data.password, user.password):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-    data = {
-        "sub": user.email,
-        "customerId": user.customerId,
-        "firstname": user.firstname,
-        "email":user.email
-        
-    }
-    access_token = create_access_token(data=data)
-    return {"access_token": access_token, "token_type": "bearer"}
-
-def create_token(form_data, db):
-    # user = authenticate_user(db, form_data.username, form_data.password)
-    user = db.query(customers_models.Customers).filter(customers_models.Customers.email == form_data.username).first()
-    print(user)
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token_data = {
-        
-        "customerId": user.customerId,
-        "firstname": user.firstname,
-        "lastname":user.lastname,
-        "email": user.email,
-        "mobile_no.":user.mobile_no
-        
-    }
-    access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"CustomerData":access_token_data,"access_token": access_token}
-
-def verify_token(token):
-    try:
-        payload = jwt.decode(token, key=SECRET_KEY)
-        print("1----------")
-        return payload
-    except:
-        print("2----------")
-        raise Exception("Wrong token")
-
-def check_active(token: str = Depends(oauth2_scheme)):
-    print("abc")
-    payload = verify_token(token)
-    active = payload.get("customerId")
-    print("3----------")
-    if not active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Please activate your Account first",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    else:
-        return payload
-
-
-# def decode_token(token: Annotated[str, Depends(oauth2_scheme)]):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         print(token)
-#         print(payload)
-#         return payload
-#     except JWTError:
-#         raise HTTPException(status_code=401, detail="Invalid authentication token")
-
-
-def CustomersbyId(token, session):
-    try:
-        payload = check_active(token)
-        print(payload)
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+def get_customer_details(username,db):
+    customer = db.query(customers_models.Customers).filter(customers_models.Customers.email==username).first()  
+    if customer is None:
+             raise HTTPException(status_code=401, detail="Unable to verify credentials")
     
-    customerId = payload.get("customerId")
+    customerId = customer.customerId
     customers =\
-        session.query(
+        db.query(
             customers_models.Customers
         ).filter(customers_models.Customers.customerId==customerId).all()
     
