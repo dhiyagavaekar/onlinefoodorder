@@ -170,8 +170,8 @@ def delete_foodItem(id,session,username):
     else:
         return f"you are not authorised"
     
-def get_restaurent_details(db,username,password):
-    print(username)
+def get_restaurent_details(username,password,db):
+    
     restaurent = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email==username,\
         restaurent_models.Restaurent.password==password).first()  
     if restaurent is None:

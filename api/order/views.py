@@ -8,13 +8,13 @@ from schema import fooditem_schema
 order_routes = APIRouter()
 # ,  dependencies=[Depends(jwt_bearer.JWTBearer())]
 @order_routes.get(
-    "/read_orders", tags=['orders']
+    "/orders", tags=['orders']
 )
 def Read_orders(Session = Depends(common_helper.get_session)):
     return order_service.read_orders(Session)
 
 @order_routes.get(
-    "/read_orderbyid", tags=['orders']
+    "/order", tags=['orders']
 )
 def Read_orderbyid(orderid:int,Session = Depends(common_helper.get_session)):
     return order_service.read_OrderbyId(orderid,Session)

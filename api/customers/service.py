@@ -146,13 +146,10 @@ def softdelete_order(id, session):
 
 
 def get_customer_details(username,password,db):
-    print(username)
-    print(password)
    
     customer = db.query(customers_models.Customers).filter(customers_models.Customers.email==username,\
         customers_models.Customers.password==password).first() 
-    print(customer.email) 
-    print(customer.password)
+    
     if customer is None:
              raise HTTPException(status_code=401, detail="Unable to verify credentials")
     

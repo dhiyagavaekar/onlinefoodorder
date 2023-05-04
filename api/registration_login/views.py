@@ -10,7 +10,7 @@ from schema import deliverystaff_schema,restaurent_schema,customers_schema
 
 reg_routes = APIRouter()
 
-@reg_routes.post("/customer/Signup", response_model=customers_schema.Token,tags=["login"])
+@reg_routes.post("/customer/signup", response_model=customers_schema.Token,tags=["login"])
 def CustomerSignup(user: customers_schema.UserCreate, db: Session = Depends(common_helper.get_session)):
     return customers_service.Customer_Signup(user,db)
 
@@ -18,7 +18,7 @@ def CustomerSignup(user: customers_schema.UserCreate, db: Session = Depends(comm
 def CustomerLogin(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
     return customers_service.Customer_Login(form_data,db)
 
-@reg_routes.post("/deliverstaff/Signup", response_model=deliverystaff_schema.Token,tags=["login"])
+@reg_routes.post("/deliverstaff/signup", response_model=deliverystaff_schema.Token,tags=["login"])
 def Deliverystaff_Signup(user: deliverystaff_schema.UserCreate, db: Session = Depends(common_helper.get_session)):
     return customers_service.deliverystaff_signup(user,db)
 
@@ -26,7 +26,7 @@ def Deliverystaff_Signup(user: deliverystaff_schema.UserCreate, db: Session = De
 def Deliverystaff_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
     return customers_service.deliverystaff_login(form_data,db)
 
-@reg_routes.post("/restaurent/Signup", response_model=deliverystaff_schema.Token,tags=["login"])
+@reg_routes.post("/restaurent/signup", response_model=deliverystaff_schema.Token,tags=["login"])
 def restaurent_Signup(user: restaurent_schema.UserCreate, db: Session = Depends(common_helper.get_session)):
     return customers_service.restaurent_Signup(user,db)
 
@@ -36,6 +36,12 @@ def restaurent_Login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessi
 
 
 
-@reg_routes.post("/login_access_token",tags=["login"])
-def Login_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
-    return customers_service.login_access_token(form_data,db)
+@reg_routes.post("/login_access_token1",tags=["login"])
+def Login_access_token1(role:str,username:str, db: Session = Depends(common_helper.get_session)):
+    return customers_service.login_access_token1(role,username,db)
+
+# @reg_routes.post("/login_access_token",tags=["login1"])
+# def Login_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(common_helper.get_session)):
+#     return customers_service.login_access_token(form_data,db)
+
+

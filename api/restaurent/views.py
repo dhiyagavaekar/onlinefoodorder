@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 
 
-@restaurent_routes.get("/restaurentbyId",tags=["restaurent"])
+@restaurent_routes.get("/restaurent",tags=["restaurent"])
 def RestaurentbyId(db: Session = Depends(common_helper.get_session),token: str = Depends(reg_service.oauth2_scheme) ):
     middleware = jwt.decode(token,reg_service.SECRET_KEY,reg_service.ALGORITHM)
     username = middleware.get("sub")
@@ -26,13 +26,13 @@ def RestaurentbyId(db: Session = Depends(common_helper.get_session),token: str =
 
 
 @restaurent_routes.get(
-    "/getallrestaurents", tags=['restaurent']
+    "/restaurents", tags=['restaurent']
 )
 def Getallrestaurents(Session = Depends(common_helper.get_session)):
     return restaurent_service.getAllRestaurents(Session)
 
 @restaurent_routes.post(
-    "/addfooditem/",\
+    "/fooditem(post)/",\
         response_model=fooditem_schema.Fooditem,
     status_code=status.HTTP_201_CREATED,tags=["fooditems"]
 )
@@ -42,7 +42,7 @@ def Addfooditem(fooditem:fooditem_schema.FooditemCreate,Session = Depends(common
     return  restaurent_service.addFoodItem(fooditem,Session,middleware_username)
 
 @restaurent_routes.put(
-    "/fooditemupdate/{id}",
+    "/fooditem(put)/{id}",
     response_model=fooditem_schema.Fooditem,
     status_code=status.HTTP_201_CREATED,tags=["fooditems"]
 )
@@ -53,7 +53,7 @@ def Fooditemupdate(
     return restaurent_service.foodItemUpdate(id,order_update,Session,middleware_username)
 
 @restaurent_routes.delete(
-    "/fooditem-delete/{id}",
+    "/fooditem(delete)/{id}",
     status_code=status.HTTP_204_NO_CONTENT,tags=["fooditems"]
 )
 def Delete_fooditem(fooditemid:int, Session = Depends(common_helper.get_session), token: str = Depends(reg_service.oauth2_scheme)):
