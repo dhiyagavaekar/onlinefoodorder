@@ -114,9 +114,10 @@ def getDeliveryofAllStatus(session):#2
 
 
 
-def get_deliverystaff_details(db,username):
+def get_deliverystaff_details(username,password,db):
     
-    staff = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email==username).first()  
+    staff = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email==username,\
+        deliverystaff_models.Deliverystaff.password==password).first()  
     if staff is None:
              raise HTTPException(status_code=401, detail="Unable to verify credentials")
    

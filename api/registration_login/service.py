@@ -142,58 +142,61 @@ def restaurent_Login(form_data, db):
 
 
 def login_access_token(form_data, db):
-    user = db.query(customers_models.Customers).filter(customers_models.Customers.email == form_data.username).first() 
+    access_token_data = {}
     
-    # if user and bcrypt.checkpw(form_data.password.encode('utf-8'), user.password.encode('utf-8')):
-    if user:
+    # Check if user exists in customers table
+    user = db.query(customers_models.Customers).filter(customers_models.Customers.email == form_data.username).first() 
+    print(user.password)
+    if user and bcrypt.checkpw(form_data.password.encode('utf-8'), user.password.encode('utf-8')):
         access_token_data = {
-        "sub": user.email,
-        "customerId": user.customerId,
-        "firstname": user.firstname,
-        "lastname":user.lastname,
-        "email": user.email,
-        "mobile_no.":user.mobile_no
-        
-    }
- 
-    if not user:
-        user = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email == form_data.username).first()
-        if user:
-            access_token_data = {
             "sub": user.email,
-            "deliverystaffId": user.deliverystaffId,
+            "customerId": user.customerId,
+            "password":user.password,
             "firstname": user.firstname,
             "lastname":user.lastname,
             "email": user.email,
-            "mobile_no.":user.mobile_no
-            
+            "mobile_no.":user.mobile_no,
+           
         }
-        if not user:
-                user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == form_data.username,\
-                    ).first()
-                print(user.password)
-                if user:
-                    access_token_data = {
-            "sub": user.email,
-            "password":user.password,
-            "restaurentId": user.restaurentId,
-            "firstname": user.name,
-            "email": user.email,
-            "mobile_no.":user.mobile_no
-            
-        }
-
+    else:
+        # Check if user exists in delivery staff table
+        user = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email == form_data.username).first()
+        if user and bcrypt.checkpw(form_data.password.encode('utf-8'), user.password.encode('utf-8')):
+            access_token_data = {
+                "sub": user.email,
+                "deliverystaffId": user.deliverystaffId,
+                "firstname": user.firstname,
+                "lastname":user.lastname,
+                "email": user.email,
+                "mobile_no.":user.mobile_no,
+                "password":user.password
+            }
+        else:
+            # Check if user exists in restaurant table
+            user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == form_data.username).first()
+            if user and bcrypt.checkpw(form_data.password.encode('utf-8'), user.password.encode('utf-8')):
+                access_token_data = {
+                    "sub": user.email,
+                    "password":user.password,
+                    "restaurentId": user.restaurentId,
+                    "firstname": user.name,
+                    "email": user.email,
+                    "mobile_no.":user.mobile_no,
+                    "password":user.password
+                }
     
-
-    access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"CustomerData":access_token_data,"access_token": access_token}
+    if access_token_data:
+        access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+        return {"Data":access_token_data,"access_token": access_token}
+    else:
+        return {"error": "Invalid username or password"}
 
 
 
 def jwt_token_middleware(token: str = Depends(oauth2_scheme)):
     payload = jwt.decode(token,SECRET_KEY,ALGORITHM)
     username = payload.get("sub")
-    return username
+    return payload
 
 
 def verify_token(token):

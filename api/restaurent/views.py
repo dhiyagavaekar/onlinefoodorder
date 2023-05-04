@@ -17,9 +17,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 @restaurent_routes.get("/restaurentbyId",tags=["restaurent"])
 def RestaurentbyId(db: Session = Depends(common_helper.get_session),token: str = Depends(reg_service.oauth2_scheme) ):
-    middleware_username=reg_service.jwt_token_middleware(token)
+    middleware = jwt.decode(token,reg_service.SECRET_KEY,reg_service.ALGORITHM)
+    username = middleware.get("sub")
+    password = middleware.get("password")
     
-    return restaurent_service.get_restaurent_details(db,middleware_username)
+    return restaurent_service.get_restaurent_details(username,password,db)
 
 
 

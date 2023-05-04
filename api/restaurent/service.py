@@ -170,10 +170,10 @@ def delete_foodItem(id,session,username):
     else:
         return f"you are not authorised"
     
-def get_restaurent_details(db,username):
+def get_restaurent_details(db,username,password):
     print(username)
     restaurent = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email==username,\
-        ).first()  
+        restaurent_models.Restaurent.password==password).first()  
     if restaurent is None:
              raise HTTPException(status_code=401, detail="Unable to verify credentials")
     

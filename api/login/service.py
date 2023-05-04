@@ -5,7 +5,6 @@ from typing import List
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, status
 from common import helper as common_helper
-from schema import userlogin1_schema
 from models import userlogin1_models
 from passlib.context import CryptContext
 from fastapi import FastAPI, Depends, HTTPException,APIRouter

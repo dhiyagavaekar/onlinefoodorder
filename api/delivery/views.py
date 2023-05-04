@@ -16,8 +16,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 @delivery_routes.get("/deliverystaffbyid",tags=["deliverystaff"])
 def DeliverStaffbyId(db: Session = Depends(common_helper.get_session), token: str = Depends(reg_service.oauth2_scheme) ):
-    middleware_username=reg_service.jwt_token_middleware(token)
-    return delivery_service.get_deliverystaff_details(db,middleware_username)
+    middleware =reg_service.jwt_token_middleware(token)
+    username = middleware.get("sub")
+    password = middleware.get("password")
+    return delivery_service.get_deliverystaff_details(username,password,db)
 
 @delivery_routes.get(
     "/read_CustomerDeliveryDetails", tags=['deliverystaff']

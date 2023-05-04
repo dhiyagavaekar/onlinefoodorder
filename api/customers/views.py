@@ -18,9 +18,10 @@ customers_routes = APIRouter()
 
 @customers_routes.get("/customersbyid",tags=["customers"])
 def CustomersbyId(db: Session = Depends(common_helper.get_session), token: str = Depends(reg_service.oauth2_scheme) ):
-    middleware_username=reg_service.jwt_token_middleware(token)
-
-    return customers_service.get_customer_details(middleware_username,db)
+    middleware = jwt.decode(token,reg_service.SECRET_KEY,reg_service.ALGORITHM)
+    username = middleware.get("sub")
+    password = middleware.get("password")
+    return customers_service.get_customer_details(username,password,db)
 
 # dependencies=[Depends(customers_service.check_active)]
 @customers_routes.get(
