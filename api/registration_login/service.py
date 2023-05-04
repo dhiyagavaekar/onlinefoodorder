@@ -1,8 +1,8 @@
 import bcrypt
 from models import customers_models,order_models,foodItems_models,orderdetails_models,restaurent_models,deliverystaff_models
 from configurations import config
-from fastapi import HTTPException,Response
-from fastapi import FastAPI, Depends, HTTPException,APIRouter
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Depends, HTTPException,APIRouter,Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
@@ -11,8 +11,11 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import Depends, APIRouter, status
 from common import helper as common_helper
+from common import service as common_service
+# from common.service import responseSend
 from typing import Annotated
 from werkzeug.security import check_password_hash
+
 
 settings=config.Settings()
 
@@ -191,66 +194,69 @@ def restaurent_Login(form_data, db):
 #     else:
 #         return {"error": "Invalid username or password"}
 
-def login_access_token1(role,username, db):
-    access_token_data = {}
-    # Check if user exists in customers table
-    if role=="customers":
-        user = db.query(customers_models.Customers).filter(customers_models.Customers.email == username).first() 
-        if user :
-            access_token_data = {
-                "sub": user.email,
-                "customerId": user.customerId,
-                "password":user.password,
-                "firstname": user.firstname,
-                "lastname":user.lastname,
-                "email": user.email,
-                "mobile_no.":user.mobile_no,
-            
-            }
-        if access_token_data:
-            access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
-            return {"message": "Data Show Successfully","Data":access_token_data,"access_token": access_token}
-        else:
-                return {"error": "Invalid username or password"}
-    
-    elif role=="deliverystaff":
-        user = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email == username).first()
-        if user :
+def login_access_token1(role,username,db):
+        access_token_data = {}
+        # Check if user exists in customers table
+        if role=="customers":
+            user = db.query(customers_models.Customers).filter(customers_models.Customers.email == username).first() 
+            if user :
                 access_token_data = {
-                        "sub": user.email,
-                        "deliverystaffId": user.deliverystaffId,
-                        "firstname": user.firstname,
-                        "lastname":user.lastname,
-                        "email": user.email,
-                        "mobile_no.":user.mobile_no,
-                        "password":user.password
-                    }
-        if access_token_data:
-            access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
-            return {"message": "Data Show Successfully","Data":access_token_data,"access_token": access_token}
-        else:
-                return {"error": "Invalid username or password"}
+                    "sub": user.email,
+                    "customerId": user.customerId,
+                    "password":user.password,
+                    "firstname": user.firstname,
+                    "lastname":user.lastname,
+                    "email": user.email,
+                    "mobile_no.":user.mobile_no,
                 
-    elif role=="restaurent":
-        user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == username).first()
-        if user :
-                access_token_data = {
-                                "sub": user.email,
-                                "password":user.password,
-                                "restaurentId": user.restaurentId,
-                                "firstname": user.name,
-                                "email": user.email,
-                                "mobile_no.":user.mobile_no,
-                                "password":user.password
-                            }
-        if access_token_data:
-            access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
-            return { "message": "Data Show Successfully","Data":access_token_data,"access_token": access_token}
+                }
+                access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+                result = {"access_token": access_token}
+                return common_service.responseSend(JSONResponse, 200, common_service.message[200]["message"], (access_token_data,result)  )  
+            else:
+                raise HTTPException(status_code=400, detail="Invalid username or password")
+        
+        elif role=="deliverystaff":
+            user = db.query(deliverystaff_models.Deliverystaff).filter(deliverystaff_models.Deliverystaff.email == username).first()
+            if user :
+                    access_token_data = {
+                            "sub": user.email,
+                            "deliverystaffId": user.deliverystaffId,
+                            "firstname": user.firstname,
+                            "lastname":user.lastname,
+                            "email": user.email,
+                            "mobile_no.":user.mobile_no,
+                            "password":user.password
+                        }
+            if access_token_data:
+                access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+                result = { "access_token": access_token}
+                return common_service.responseSend(JSONResponse, 200, common_service.message[200]["message"],  (access_token_data,result))   
+            else:
+                    raise HTTPException(status_code=400, detail="Invalid username or password")
+                    
+        elif role=="restaurent":
+            user = db.query(restaurent_models.Restaurent).filter(restaurent_models.Restaurent.email == username).first()
+            if user :
+                    access_token_data = {
+                                    "sub": user.email,
+                                    "password":user.password,
+                                    "restaurentId": user.restaurentId,
+                                    "firstname": user.name,
+                                    "email": user.email,
+                                    "mobile_no.":user.mobile_no,
+                                    "password":user.password
+                                }
+            if access_token_data:
+                access_token = jwt.encode(access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+                result = {"access_token": access_token}
+                return common_service.responseSend(JSONResponse, 200, common_service.message[200]["message"],  (access_token_data,result))   
+            else:
+                    raise HTTPException(status_code=400, detail="Invalid username or password")
         else:
-                return {"error": "Invalid username or password"}
-    else:
-                return {"error": "Invalid username or password"}
-    
+                    raise HTTPException(status_code=400, detail="Invalid username or password")
+                
+        
     
 
 def jwt_token_middleware(token: str = Depends(oauth2_scheme)):
