@@ -1,18 +1,8 @@
-from models import customers_models,order_models,foodItems_models,orderdetails_models,restaurent_models,deliverystaff_models
+from models import customers_models,order_models,foodItems_models,orderdetails_models
 from configurations import config
-from fastapi import HTTPException,Response
+from fastapi import HTTPException
 from . import helper as customer_helper
-from fastapi import FastAPI, Depends, HTTPException,APIRouter
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from jose import jwt, JWTError
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from typing import Optional
-from fastapi import Depends, APIRouter, status
-from common import helper as common_helper
-from typing import Annotated
-from api.registration_login import service as reg_service
+from fastapi import Depends, HTTPException
 
 settings=config.Settings()
 
@@ -59,15 +49,7 @@ def getOrderDetailbyId(orderid,session):#1,1,1
 
 def orderUpdate(id: int,customerid:int, orderupdate, session):
     orderupdate_json_data = dict(orderupdate)
-#         {
-#   "orderId": 1,
-#   "restaurentId": 1,
-#   "foodItemId": 1,
-#   "quantity": 3,
-#   "instructions": "heavy cheese",
-#   "created_at": "2023-04-20T12:13:29",
-#   "updated_at": "2023-04-20T12:13:29"
-# }
+
  #customer can update their order 
     order = session.query(order_models.Order1).filter(
         order_models.Order1.orderId== id,order_models.Order1.customerId==customerid
@@ -98,15 +80,7 @@ def createOrder(id,order,session):
         raise HTTPException(
             status_code=404, detail=f"customer with id {id} not found"
         )
-        #         {
-        #   "orderId": 12,
-        #   "restaurentId": 1,
-        #   "foodItemId": 2,
-        #   "quantity": 2,
-        #   "instructions": "yes",
-        #   "created_at": "2023-04-21T11:20:27",
-        #   "updated_at": "2023-04-21T11:20:27"
-        # }
+        
         
     else:
         order =\

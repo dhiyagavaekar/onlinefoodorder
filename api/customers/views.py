@@ -31,13 +31,13 @@ def customers_read(Session = Depends(common_helper.get_session)):
     return customers_service.read_customers(Session)
 
 @customers_routes.get(
-    "/order/details(get)",  tags=['customers']
+    "/order/details",  tags=['customers']
 )
 def Getorderdetailbyid(orderid,Session = Depends(common_helper.get_session)):
     return customers_service.getOrderDetailbyId(orderid,Session)
 
 @customers_routes.put(
-    "/order(put)/{id}",
+    "/order/{id}",
     response_model=order_schema.Order,
     status_code=status.HTTP_201_CREATED,tags=["customers"]
 )
@@ -47,7 +47,7 @@ def Orderupdate(
     return customers_service.orderUpdate(id, customerid,order_update,Session)
 
 @customers_routes.post(
-    "/order(post)/{id}",\
+    "/order/{id}",\
         response_model=order_schema.Order,
     status_code=status.HTTP_201_CREATED,tags=["customers"]
 )
@@ -55,14 +55,14 @@ def Createorder(id,order:order_schema.OrderCreate,Session = Depends(common_helpe
     return  customers_service.createOrder(id,order,Session)
 
 @customers_routes.delete(
-    "/order(delete)/{id}",
+    "/order/{id}",
     status_code=status.HTTP_204_NO_CONTENT,tags=["customers"]
 )
 def Delete_order(orderid:int, Session = Depends(common_helper.get_session)):
     return customers_service.deleteOrder(orderid,Session) 
 
 @customers_routes.delete(
-    "/order(softdelete)/{id}",
+    "/order/{id}",
     status_code=status.HTTP_204_NO_CONTENT,tags=["customers"]
 )
 def SoftDelete_order(orderid:int, Session = Depends(common_helper.get_session)):

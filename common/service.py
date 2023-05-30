@@ -6,27 +6,6 @@ from fastapi.responses import JSONResponse
 from typing import Optional
 from .message import message
 
-# message = {
-#   200: {
-#     "message": "Data Show Successfully",
-#     "httpCode": 200,
-#     "status": 1,
-#   },
-#   201: {
-#     "message": "Record Created Successfully",
-#     "httpCode": 201,
-#     "status": 1,
-#   },
-#   202: {
-#     "message": "Record Updated Successfully",
-#     "httpCode": 201,
-#     "status": 1,
-#   },
-#   204: {
-#     "message": "No record found",
-#     "httpCode": 200,
-#     "status": 0,
-#   }}
 
 
 def responseSend(res: Response, code: Optional[int] = None, msg: Optional[str] = None, data: Optional[dict] = None, count: Optional[int] = None):

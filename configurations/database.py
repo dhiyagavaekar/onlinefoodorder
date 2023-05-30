@@ -31,7 +31,8 @@ try:
     # connection_string = 'DRIVER={ODBC Driver 18 for SQL Server};SERVER='+settings.SERVER+';PORT='+settings.PORT+';DATABASE='+settings.DATABASE+';UID='+settings.UID+';PWD='+settings.PASSWORD
     connection_string = "mysql+mysqlconnector://root@localhost/onlineFoodOrder"
     ENGINE = create_engine(connection_string)
-    # connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+    # connection_url =postgresql://username:password@localhost:5432/mydatabase
+
 
     # ENGINE = create_engine(connection_url, connect_args = {
     #     "TrustServerCertificate": "yes"
